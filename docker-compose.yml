@@ -1,0 +1,26 @@
+version: "3"
+services:
+  server:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+    volumes:
+      - .:/app
+    command: bash -c "wait-for-it database:5432 -q -- diesel setup && cargo run --release"
+  database:
+    image: "postgres:11.5-alpine"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: dindin
+      POSTGRES_USER: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+volumes:
+  pgdata: {}

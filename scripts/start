@@ -1,0 +1,3 @@
+#!/bin/bash -e
+
+wait-for-it database:5432 -q -- diesel setup && cargo run --release
