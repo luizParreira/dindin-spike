@@ -1,7 +1,9 @@
-use super::models::{AuthenticationPin, NewPin, NewUser, User};
+use super::models::{
+    AuthenticationPin, AuthenticationPinAttempt, NewAuthPinAttempt, NewPin, NewUser, User,
+};
 use super::schema::authentication_pins::dsl::{id, user_id};
 use super::schema::users::dsl::{email, phone_number};
-use super::schema::{authentication_pins, users};
+use super::schema::{authentication_pin_attempts, authentication_pins, users};
 use chrono::Duration;
 use chrono::Utc;
 use diesel::expression_methods::ExpressionMethods;
@@ -46,7 +48,7 @@ pub fn find_user_by(
 pub fn get_latest_auth_pin(conn: &PgConnection, user: &User) -> Option<AuthenticationPin> {
     authentication_pins::table
         .filter(user_id.eq(user.id))
-        .order_by(id.asc())
+        .order_by(id.desc())
         .first(conn)
         .map_err(|err| println!("find_user: {}", err))
         .ok()
@@ -75,8 +77,8 @@ pub fn create_authentication_pin(
 
     match latest_pin {
         Some(auth_pin) => {
-            let ellapsed_time = now - auth_pin.created_at;
-            if ellapsed_time <= Duration::hours(2) {
+            let minutes_ago = now - Duration::minutes(10);
+            if auth_pin.created_at > minutes_ago {
                 auth_pin
             } else {
                 create_auth_pin(conn, user, pin)
@@ -84,4 +86,21 @@ pub fn create_authentication_pin(
         }
         None => create_auth_pin(conn, user, pin),
     }
+}
+
+pub fn create_authentication_pin_attempt(
+    conn: &PgConnection,
+    user: &User,
+    pin_input: String,
+) -> AuthenticationPinAttempt {
+    let new_pin_attempt = NewAuthPinAttempt {
+        user_id: user.id,
+        pin: pin_input,
+        created_at: Utc::now(),
+    };
+
+    diesel::insert_into(authentication_pin_attempts::table)
+        .values(&new_pin_attempt)
+        .get_result(conn)
+        .expect("Error saving pin auth attempt")
 }

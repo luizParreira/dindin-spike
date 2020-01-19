@@ -1,4 +1,4 @@
-use super::schema::{authentication_pins, users};
+use super::schema::{authentication_pin_attempts, authentication_pins, users};
 use chrono::{DateTime, Utc};
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
@@ -17,7 +17,7 @@ pub struct NewUser {
     pub phone_number: Option<String>,
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Debug)]
 pub struct AuthenticationPin {
     pub id: i32,
     pub user_id: i32,
@@ -28,6 +28,22 @@ pub struct AuthenticationPin {
 #[derive(Insertable)]
 #[table_name = "authentication_pins"]
 pub struct NewPin {
+    pub user_id: i32,
+    pub pin: String,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Queryable)]
+pub struct AuthenticationPinAttempt {
+    pub id: i32,
+    pub user_id: i32,
+    pub pin: String,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Insertable)]
+#[table_name = "authentication_pin_attempts"]
+pub struct NewAuthPinAttempt {
     pub user_id: i32,
     pub pin: String,
     pub created_at: DateTime<Utc>,

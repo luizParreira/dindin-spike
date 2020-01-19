@@ -3,6 +3,8 @@
 #[macro_use]
 extern crate diesel;
 
+pub mod auth;
+pub mod authenticate;
 pub mod db;
 pub mod login;
 pub mod models;
