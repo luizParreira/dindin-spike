@@ -1,4 +1,5 @@
-use super::schema::users;
+use super::schema::{authentication_pins, users};
+use chrono::{DateTime, Utc};
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
@@ -14,4 +15,20 @@ pub struct User {
 pub struct NewUser {
     pub email: Option<String>,
     pub phone_number: Option<String>,
+}
+
+#[derive(Queryable)]
+pub struct AuthenticationPin {
+    pub id: i32,
+    pub user_id: i32,
+    pub pin: String,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Insertable)]
+#[table_name = "authentication_pins"]
+pub struct NewPin {
+    pub user_id: i32,
+    pub pin: String,
+    pub created_at: DateTime<Utc>,
 }

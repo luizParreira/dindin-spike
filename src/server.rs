@@ -1,5 +1,5 @@
-use crate::authenticate;
-use crate::db::LogsDbConn;
+use crate::db::DBConn;
+use crate::login;
 use rocket::{routes, Rocket};
 
 use dotenv::dotenv;
@@ -35,6 +35,6 @@ pub fn init() -> Rocket {
     dotenv().ok();
 
     rocket::custom(from_env())
-        .attach(LogsDbConn::fairing())
-        .mount("/", routes![authenticate::authenticate])
+        .attach(DBConn::fairing())
+        .mount("/", routes![login::login])
 }

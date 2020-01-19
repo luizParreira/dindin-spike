@@ -1,6 +1,9 @@
-use super::models::{NewUser, User};
-use super::schema::users;
-use super::schema::users::dsl::*;
+use super::models::{AuthenticationPin, NewPin, NewUser, User};
+use super::schema::authentication_pins::dsl::{id, user_id};
+use super::schema::users::dsl::{email, phone_number};
+use super::schema::{authentication_pins, users};
+use chrono::Duration;
+use chrono::Utc;
 use diesel::expression_methods::ExpressionMethods;
 use diesel::query_dsl::RunQueryDsl;
 use rocket_contrib::databases::database;
@@ -9,7 +12,7 @@ use diesel::PgConnection;
 use diesel::QueryDsl;
 
 #[database("diesel_postgres_pool")]
-pub struct LogsDbConn(PgConnection);
+pub struct DBConn(PgConnection);
 
 pub fn create_user(
     conn: &PgConnection,
@@ -38,4 +41,47 @@ pub fn find_user_by(
         .first(conn)
         .map_err(|err| println!("find_user: {}", err))
         .ok()
+}
+
+pub fn get_latest_auth_pin(conn: &PgConnection, user: &User) -> Option<AuthenticationPin> {
+    authentication_pins::table
+        .filter(user_id.eq(user.id))
+        .order_by(id.asc())
+        .first(conn)
+        .map_err(|err| println!("find_user: {}", err))
+        .ok()
+}
+
+fn create_auth_pin(conn: &PgConnection, user: &User, pin: String) -> AuthenticationPin {
+    let new_pin = NewPin {
+        user_id: user.id,
+        pin,
+        created_at: Utc::now(),
+    };
+
+    diesel::insert_into(authentication_pins::table)
+        .values(&new_pin)
+        .get_result(conn)
+        .expect("Error saving new pin")
+}
+
+pub fn create_authentication_pin(
+    conn: &PgConnection,
+    user: &User,
+    pin: String,
+) -> AuthenticationPin {
+    let latest_pin = get_latest_auth_pin(conn, user);
+    let now = Utc::now();
+
+    match latest_pin {
+        Some(auth_pin) => {
+            let ellapsed_time = now - auth_pin.created_at;
+            if ellapsed_time <= Duration::hours(2) {
+                auth_pin
+            } else {
+                create_auth_pin(conn, user, pin)
+            }
+        }
+        None => create_auth_pin(conn, user, pin),
+    }
 }
