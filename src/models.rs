@@ -1,7 +1,8 @@
 use super::schema::users;
 use diesel::{Insertable, Queryable};
+use serde::{Deserialize, Serialize};
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize, Deserialize)]
 pub struct User {
     pub id: i32,
     pub email: Option<String>,
@@ -10,7 +11,7 @@ pub struct User {
 
 #[derive(Insertable)]
 #[table_name = "users"]
-pub struct NewUser<'a> {
-    pub email: Option<&'a String>,
-    pub phone_number: Option<&'a String>,
+pub struct NewUser {
+    pub email: Option<String>,
+    pub phone_number: Option<String>,
 }

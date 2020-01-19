@@ -1,7 +1,7 @@
 table! {
     users (id) {
         id -> Int4,
-        email -> Nullable<Varchar>,
-        phone_number -> Nullable<Varchar>,
+        email -> Nullable<Text>,
+        phone_number -> Nullable<Text>,
     }
 }

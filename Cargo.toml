@@ -19,3 +19,8 @@ features = ["json",  "diesel_postgres_pool"]
 [dependencies.serde]
 version = "1.0.104"
 features = ["derive"]
+
+
+[dev-dependencies]
+pretty_assertions = "0.6.1"
+serde_json = "1.0.44"

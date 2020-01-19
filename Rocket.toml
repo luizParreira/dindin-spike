@@ -2,5 +2,6 @@
 address = "0.0.0.0"
 port = 8000
 
-[global.databases.pgdb]
+[global.databases.dindin_spike]
 url = "postgres://postgres:dindin@database:5432"
+
